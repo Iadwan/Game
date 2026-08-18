@@ -2,6 +2,9 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+
 struct SDLApplication {
     SDL_Window* window = nullptr;
     const bool* keystate = nullptr;
@@ -31,7 +34,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 
     SDLApplication* app = new SDLApplication();
 
-    app->window = SDL_CreateWindow("Ibrahim - SDL3", 800, 600, SDL_WINDOW_RESIZABLE);
+    app->window = SDL_CreateWindow("Ibrahim - SDL3", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
     if (!app->window) {
         SDL_Log("CreateWindow failed: %s", SDL_GetError());
         delete app;
@@ -129,16 +132,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     };
     SDL_RenderGeometry(app->renderer, nullptr, tri, 3, nullptr, 0);
 
+
     // Another one opostie side :) and it is moving down 
-
-    app->tri2X += 0.05f;
-
-    if (app->tri2X > 320.0f) {
-        app->tri2X = -220.0f;   // wrap: triangle is 200 wide, starts at x=270
-        app->LeftWindowY += 1;
-    }
-
-
 
     SDL_Vertex tri2[3] = {
     { {470.0f,  40.0f + app->tri2X}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    – red
@@ -147,6 +142,14 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     };
 
     SDL_RenderGeometry(app->renderer, nullptr, tri2, 3, nullptr, 0);
+
+    app->tri2X += 0.05f;
+
+    if (app->tri2X > WINDOW_HEIGHT) {
+        app->tri2X = -220.0f;   // wrap: triangle is 200 wide -220.0f
+        app->LeftWindowY += 1;
+    }
+
 
     // Move the secon traingle 
 
