@@ -120,7 +120,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // Adding some text 
     SDL_SetRenderDrawColor(app->renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);  /* white, full alpha */
     SDL_RenderDebugText(app->renderer, 400, 40, "Ibrahim Testing Text!");
-    SDL_RenderDebugTextFormat(app->renderer, 400, 60, "Triangle Left Window: %d", app->LeftWindowY);
+    SDL_RenderDebugTextFormat(app->renderer, 400, 60, "Triangle Left The Window: %d", app->LeftWindowY);
 
     SDL_Vertex tri[3] = {
         { {60.0f,  40.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    – red
