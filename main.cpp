@@ -15,7 +15,7 @@ struct SDLApplication {
     float circleX = 0.0f;
     float circleY = 0.0f;
     float circleS = 10.0f;
-    float tri2X = 0.0f;
+    float tri2Y = 0.0f;
     int LeftWindowY = 0;
 
 
@@ -136,17 +136,17 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // Another one opostie side :) and it is moving down 
 
     SDL_Vertex tri2[3] = {
-    { {470.0f,  40.0f + app->tri2X}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    – red
-    { {270.0f, 200.0f + app->tri2X}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // left   – green
-    { {470.0f, 200.0f + app->tri2X}, {0.0f, 1.0f, 1.0f, 1.0f}, {0, 0} },  // right  – blue
+    { {470.0f,  40.0f + app->tri2Y}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    – red
+    { {270.0f, 200.0f + app->tri2Y}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // left   – green
+    { {470.0f, 200.0f + app->tri2Y}, {0.0f, 1.0f, 1.0f, 1.0f}, {0, 0} },  // right  – blue
     };
 
     SDL_RenderGeometry(app->renderer, nullptr, tri2, 3, nullptr, 0);
 
-    app->tri2X += 0.05f;
+    app->tri2Y += 0.05f;
 
-    if (app->tri2X > WINDOW_HEIGHT) {
-        app->tri2X = -220.0f;   // wrap: triangle is 200 wide -220.0f
+    if (app->tri2Y > WINDOW_HEIGHT) {
+        app->tri2Y = -220.0f;   // wrap: triangle is 200 wide -220.0f
         app->LeftWindowY += 1;
     }
 
