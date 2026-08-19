@@ -16,6 +16,9 @@ struct SDLApplication {
     float circleY = 0.0f;
     float circleS = 10.0f;
     float tri2Y = 0.0f;
+    float ballX = 50.0f;
+    float ballY = 350.0f;
+
     int LeftWindowY = 0;
 
 
@@ -98,6 +101,22 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
         // Chords are checked with the key state array, not a case label
         if (app->keystate[SDL_SCANCODE_A] && app->keystate[SDL_SCANCODE_S]) {
             SDL_Log("A and S Key was pressed");
+        }
+        else if (app->keystate[SDL_SCANCODE_DOWN]) {
+            app->ballY += 10.0f;  // Move the ball down by 10 pixels
+            SDL_Log("SDL_SCANCODE_DOWN was pressed");
+        }
+        else if (app->keystate[SDL_SCANCODE_UP]) {
+            app->ballY -= 10.0f;  // Move the ball UP by 10 pixels
+            SDL_Log("SDL_SCANCODE_UP was pressed");
+        }
+        else if (app->keystate[SDL_SCANCODE_LEFT]) {
+            app->ballX -= 10.0f;  // Move the ball LEFT by 10 pixels
+            SDL_Log("SDL_SCANCODE_LEFT was pressed");
+        }
+        else if (app->keystate[SDL_SCANCODE_RIGHT]) {
+            app->ballX += 10.0f;  // Move the ball RIGHT by 10 pixels
+            SDL_Log("SDL_SCANCODE_RIGHT was pressed");
         }
     }
     else if (event->type == SDL_EVENT_MOUSE_MOTION) {
@@ -191,6 +210,11 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     SDL_FRect doorWindow = { 570.0f, 350.0f, 70.0f, 70.0f };         // x, y, w, h
     SDL_RenderFillRect(app->renderer, &doorWindow);
 
+    // Moving part
+
+    SDL_SetRenderDrawColor(app->renderer, 0, 222, 0, 255);   // yellow (alpha must be 255 to be visible)
+    SDL_FRect Ball = { app->ballX, app->ballY, 30.0f, 30.0f };         // x, y, w, h
+    SDL_RenderFillRect(app->renderer, &Ball);
 
     // Move the secon traingle 
 
