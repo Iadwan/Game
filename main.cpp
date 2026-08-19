@@ -184,8 +184,12 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
 
     SDL_SetRenderDrawColor(app->renderer, 196, 168, 0, 255);   // yellow (alpha must be 255 to be visible)
-    SDL_FRect door2 = { 570.0f, 450.0f, 50.0f, 100.0f };         // x, y, w, h
+    SDL_FRect door2 = { 575.0f, 450.0f, 50.0f, 100.0f };         // x, y, w, h
     SDL_RenderFillRect(app->renderer, &door2);
+
+    SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 255);   // yellow (alpha must be 255 to be visible)
+    SDL_FRect doorWindow = { 570.0f, 350.0f, 70.0f, 70.0f };         // x, y, w, h
+    SDL_RenderFillRect(app->renderer, &doorWindow);
 
 
     // Move the secon traingle 
