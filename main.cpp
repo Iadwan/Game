@@ -150,6 +150,34 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         app->LeftWindowY += 1;
     }
 
+    // Differetn init Method for the triangle
+    SDL_Vertex tri3[3];
+
+    tri3[0].position.x = 600.0f;
+    tri3[0].position.y = 200.0f;    
+    tri3[0].color.r = 1.0f;
+    tri3[0].color.g = 1.0f;
+    tri3[0].color.b = 0.0f;
+    tri3[0].color.a = 1.0f;
+
+    tri3[1].position.x = 700.0f;
+    tri3[1].position.y = 300.0f;
+    tri3[1] .color.r = 0.0f;
+    tri3[1].color.g = 1.0f;
+    tri3[1].color.b = 0.0f;
+    tri3[1].color.a = 1.0f;
+
+    tri3[2].position.x = 500.0f;
+    tri3[2].position.y = 300.0f;
+    tri3[2].color.r = 0.0f;
+    tri3[2].color.g = 0.0f;
+    tri3[2].color.b = 1.0f;
+    tri3[2].color.a = 1.0f;
+
+    SDL_RenderGeometry(app->renderer, nullptr, tri3, 3, nullptr, 0);
+
+    // 
+
 
     // Move the secon traingle 
 
