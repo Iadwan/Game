@@ -20,6 +20,8 @@ struct SDLApplication {
     float ballY = 350.0f;
 
     int LeftWindowY = 0;
+    int Hit = 0;
+    bool wasColliding = false;  // Setting this to count the collcision outside frame iterator
 
 
     // Audio: audio
@@ -27,6 +29,20 @@ struct SDLApplication {
     Uint8* wavData = nullptr;
     Uint32 wavLen = 0;
 };
+
+void DrawCircle(SDL_Renderer* renderer, float cx, float cy, float radius)
+{
+    for (float y = -radius; y <= radius; y++)
+    {
+        for (float x = -radius; x <= radius; x++)
+        {
+            if (x * x + y * y <= radius * radius)
+            {
+                SDL_RenderPoint(renderer, cx + x, cy + y);
+            }
+        }
+    }
+}
 
 // Called once at startup (replaces the code before your while loop)
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
@@ -113,15 +129,20 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
         else if (app->keystate[SDL_SCANCODE_LEFT]) {
             app->ballX -= 10.0f;  // Move the ball LEFT by 10 pixels
             SDL_Log("SDL_SCANCODE_LEFT was pressed");
+
+
         }
         else if (app->keystate[SDL_SCANCODE_RIGHT]) {
             app->ballX += 10.0f;  // Move the ball RIGHT by 10 pixels
             SDL_Log("SDL_SCANCODE_RIGHT was pressed");
+
         }
+
     }
     else if (event->type == SDL_EVENT_MOUSE_MOTION) {
         SDL_Log("x, y: %f,%f", event->motion.x, event->motion.y);
     }
+
 
     return SDL_APP_CONTINUE;
 }
@@ -143,6 +164,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     SDL_SetRenderDrawColor(app->renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);  /* white, full alpha */
     SDL_RenderDebugText(app->renderer, 400, 40, "Ibrahim Testing Text!");
     SDL_RenderDebugTextFormat(app->renderer, 400, 60, "Triangle Left The Window: %d", app->LeftWindowY);
+    SDL_RenderDebugTextFormat(app->renderer, 400, 80, "Enemey Ball Hit Window: %d", app->Hit);
+
 
     SDL_Vertex tri[3] = {
         { {60.0f,  40.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    – red
@@ -169,6 +192,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         app->LeftWindowY += 1;
     }
 
+    
     // Differetn init Method for the triangle
     SDL_Vertex tri3[3];
 
@@ -216,6 +240,33 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     SDL_FRect Ball = { app->ballX, app->ballY, 30.0f, 30.0f };         // x, y, w, h
     SDL_RenderFillRect(app->renderer, &Ball);
 
+    // Collision Detection between the moving ball and the door window
+    if (SDL_HasRectIntersectionFloat(&Ball, &doorWindow))
+    {
+        SDL_Log("Collision!\n");
+        if (!app->wasColliding)
+        {
+            app->Hit += 1;
+            app->wasColliding = true;
+        }
+    }else{app->wasColliding = false;}
+
+
+
+    // Wrapping moving element to windows size
+
+    if (Ball.x > WINDOW_WIDTH) {
+        app->ballX = -30.0f;  // Reset to the left side of the window
+    }
+    else if (Ball.x < -30.0f) {
+        app->ballX = WINDOW_WIDTH;  // Reset to the right side of the window
+    }else if (Ball.y > WINDOW_HEIGHT) {
+        app->ballY = -30.0f;  // Reset to the top side of the window
+    }
+    else if (Ball.y < -30.0f) {
+        app->ballY = WINDOW_HEIGHT;  // Reset to the bottom side of the window
+    }
+
     // Move the secon traingle 
 
 
@@ -236,8 +287,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     app->squareX += 2.0f;                       // move 2 px per frame
     app->squareY += 2.0f;                       // move 2 px per frame
 
-    if (app->squareX > 800.0f) app->squareX = -20.0f;   // wrap when off the right edge
-    if (app->squareY > 600.0f) app->squareY = -20.0f;   // wrap when off the Bottom edge
+
+    if (app->squareX > WINDOW_WIDTH) app->squareX = -20.0f;   // wrap when off the right edge
+    if (app->squareY > WINDOW_HEIGHT) app->squareY = -20.0f;   // wrap when off the Bottom edge
 
 
     //Square 
@@ -260,6 +312,15 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 255, 255);   // Color
     SDL_FRect circle = { app->circleX, app->circleY, app->circleS, app->circleS };         // x, y, w, h
     SDL_RenderFillRect(app->renderer, &circle);
+
+
+    // Real Circle
+    
+    SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 255);
+    DrawCircle(app->renderer, 50, 500, 10);
+
+
+
 
 
 
