@@ -1,6 +1,7 @@
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3_image/SDL_image.h>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -9,6 +10,7 @@ struct SDLApplication {
     SDL_Window* window = nullptr;
     const bool* keystate = nullptr;
     SDL_Renderer* renderer = nullptr;
+    SDL_Texture* playerTexture = nullptr;
     float squareX = 0.0f;
     float squareY = 0.0f;
     float squareS = 10.0f;
@@ -22,6 +24,7 @@ struct SDLApplication {
     int LeftWindowY = 0;
     int Hit = 0;
     bool wasColliding = false;  // Setting this to count the collcision outside frame iterator
+
 
 
     // Audio: audio
@@ -88,6 +91,18 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         SDL_Log("OpenAudioDeviceStream failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+//Player texture: build absolute path next to the .exe and load player.png
+    char playerTexturePath[512];
+    SDL_snprintf(playerTexturePath, sizeof(playerTexturePath), "%sassets/player.png", SDL_GetBasePath());
+    SDL_Log("Loading texture: %s", playerTexturePath);
+
+    app->playerTexture = IMG_LoadTexture(app->renderer, playerTexturePath);
+    if (!app->playerTexture) {
+        SDL_Log("IMG_LoadTexture failed: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
 
     // Audio: unpause and play once as the window opens
     SDL_ResumeAudioStreamDevice(app->audio);
@@ -168,9 +183,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
 
     SDL_Vertex tri[3] = {
-        { {60.0f,  40.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    – red
-        { {60.0f, 200.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {0, 0} },  // left   – green
-        { {260.0f, 200.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // right  – blue
+        { {60.0f,  40.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    ï¿½ red
+        { {60.0f, 200.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {0, 0} },  // left   ï¿½ green
+        { {260.0f, 200.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // right  ï¿½ blue
     };
     SDL_RenderGeometry(app->renderer, nullptr, tri, 3, nullptr, 0);
 
@@ -178,9 +193,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // Another one opostie side :) and it is moving down 
 
     SDL_Vertex tri2[3] = {
-    { {470.0f,  40.0f + app->tri2Y}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    – red
-    { {270.0f, 200.0f + app->tri2Y}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // left   – green
-    { {470.0f, 200.0f + app->tri2Y}, {0.0f, 1.0f, 1.0f, 1.0f}, {0, 0} },  // right  – blue
+    { {470.0f,  40.0f + app->tri2Y}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    ï¿½ red
+    { {270.0f, 200.0f + app->tri2Y}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // left   ï¿½ green
+    { {470.0f, 200.0f + app->tri2Y}, {0.0f, 1.0f, 1.0f, 1.0f}, {0, 0} },  // right  ï¿½ blue
     };
 
     SDL_RenderGeometry(app->renderer, nullptr, tri2, 3, nullptr, 0);
@@ -321,6 +336,23 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
 
 
+   static SDL_FRect player{
+    150.0f,
+    350.0f,
+    64.0f,
+    64.0f
+};
+
+player.x +=0.1f; // Move the player to the right by 0.1 pixels per frame
+
+SDL_RenderTexture(
+    app->renderer,
+    app->playerTexture,
+    nullptr,
+    &player
+);
+
+
 
 
 
@@ -337,6 +369,7 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     if (app) {
         SDL_DestroyAudioStream(app->audio);   // NEW
         SDL_free(app->wavData);               // NEW
+        SDL_DestroyTexture(app->playerTexture);
         SDL_DestroyRenderer(app->renderer);
         SDL_DestroyWindow(app->window);
         delete app;
