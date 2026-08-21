@@ -10,7 +10,6 @@ struct SDLApplication {
     SDL_Window* window = nullptr;
     const bool* keystate = nullptr;
     SDL_Renderer* renderer = nullptr;
-    SDL_Texture* playerTexture = nullptr;
     float squareX = 0.0f;
     float squareY = 0.0f;
     float squareS = 10.0f;
@@ -26,11 +25,24 @@ struct SDLApplication {
     bool wasColliding = false;  // Setting this to count the collcision outside frame iterator
 
 
-
     // Audio: audio
     SDL_AudioStream* audio = nullptr;
     Uint8* wavData = nullptr;
     Uint32 wavLen = 0;
+
+    // Adding Player
+
+    SDL_Texture* playerTexture = nullptr;
+
+
+    SDL_FRect player{
+    400.0f,
+    300.0f,
+    64.0f,
+    64.0f
+    };
+    // Player Speed
+    float speed = 5.0f;
 };
 
 void DrawCircle(SDL_Renderer* renderer, float cx, float cy, float radius)
@@ -92,21 +104,23 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         return SDL_APP_FAILURE;
     }
 
-//Player texture: build absolute path next to the .exe and load player.png
-    char playerTexturePath[512];
-    SDL_snprintf(playerTexturePath, sizeof(playerTexturePath), "%sassets/player.png", SDL_GetBasePath());
-    SDL_Log("Loading texture: %s", playerTexturePath);
-
-    app->playerTexture = IMG_LoadTexture(app->renderer, playerTexturePath);
-    if (!app->playerTexture) {
-        SDL_Log("IMG_LoadTexture failed: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-
-
     // Audio: unpause and play once as the window opens
     SDL_ResumeAudioStreamDevice(app->audio);
     SDL_PutAudioStreamData(app->audio, app->wavData, app->wavLen);
+
+    // Plsyrt iniy
+    app->playerTexture =
+        IMG_LoadTexture(
+            app->renderer,
+            "assets/player.png"
+        );
+
+    if (!app->playerTexture)
+    {
+        SDL_Log("Failed to load player: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
 
     return SDL_APP_CONTINUE;
 }
@@ -183,9 +197,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
 
     SDL_Vertex tri[3] = {
-        { {60.0f,  40.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    ï¿½ red
-        { {60.0f, 200.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {0, 0} },  // left   ï¿½ green
-        { {260.0f, 200.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // right  ï¿½ blue
+        { {60.0f,  40.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    – red
+        { {60.0f, 200.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {0, 0} },  // left   – green
+        { {260.0f, 200.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // right  – blue
     };
     SDL_RenderGeometry(app->renderer, nullptr, tri, 3, nullptr, 0);
 
@@ -193,9 +207,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // Another one opostie side :) and it is moving down 
 
     SDL_Vertex tri2[3] = {
-    { {470.0f,  40.0f + app->tri2Y}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    ï¿½ red
-    { {270.0f, 200.0f + app->tri2Y}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // left   ï¿½ green
-    { {470.0f, 200.0f + app->tri2Y}, {0.0f, 1.0f, 1.0f, 1.0f}, {0, 0} },  // right  ï¿½ blue
+    { {470.0f,  40.0f + app->tri2Y}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    – red
+    { {270.0f, 200.0f + app->tri2Y}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // left   – green
+    { {470.0f, 200.0f + app->tri2Y}, {0.0f, 1.0f, 1.0f, 1.0f}, {0, 0} },  // right  – blue
     };
 
     SDL_RenderGeometry(app->renderer, nullptr, tri2, 3, nullptr, 0);
@@ -336,24 +350,31 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
 
 
-   static SDL_FRect player{
-    150.0f,
-    350.0f,
-    64.0f,
-    64.0f
-};
+    // Player Rendering
+    const bool* keys = SDL_GetKeyboardState(nullptr);
 
-player.x +=0.1f; // Move the player to the right by 0.1 pixels per frame
+    if (keys[SDL_SCANCODE_RIGHT])
+        app->player.x += app->speed;
 
-SDL_RenderTexture(
-    app->renderer,
-    app->playerTexture,
-    nullptr,
-    &player
-);
+    if (keys[SDL_SCANCODE_LEFT])
+        app->player.x -= app->speed;
 
+    if (keys[SDL_SCANCODE_UP])
+        app->player.y -= app->speed;
 
+    if (keys[SDL_SCANCODE_DOWN])
+        app->player.y += app->speed;
 
+    SDL_RenderClear(app->renderer);
+
+    SDL_RenderTexture(
+        app->renderer,
+        app->playerTexture,
+        nullptr,
+        &app->player
+    );
+
+    SDL_RenderPresent(app->renderer);
 
 
     // Show the trame
@@ -369,7 +390,6 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     if (app) {
         SDL_DestroyAudioStream(app->audio);   // NEW
         SDL_free(app->wavData);               // NEW
-        SDL_DestroyTexture(app->playerTexture);
         SDL_DestroyRenderer(app->renderer);
         SDL_DestroyWindow(app->window);
         delete app;
