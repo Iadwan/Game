@@ -1,7 +1,6 @@
-#define SDL_MAIN_USE_CALLBACKS 1
+ï»¿#define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <SDL3_image/SDL_image.h>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -10,6 +9,7 @@ struct SDLApplication {
     SDL_Window* window = nullptr;
     const bool* keystate = nullptr;
     SDL_Renderer* renderer = nullptr;
+
     float squareX = 0.0f;
     float squareY = 0.0f;
     float squareS = 10.0f;
@@ -24,25 +24,14 @@ struct SDLApplication {
     int Hit = 0;
     bool wasColliding = false;  // Setting this to count the collcision outside frame iterator
 
+    //Player
+    SDL_Surface* playerSurface = SDL_LoadPNG("assets/player.png");
+    SDL_Texture* playerTexture = nullptr;
 
     // Audio: audio
     SDL_AudioStream* audio = nullptr;
     Uint8* wavData = nullptr;
     Uint32 wavLen = 0;
-
-    // Adding Player
-
-    SDL_Texture* playerTexture = nullptr;
-
-
-    SDL_FRect player{
-    400.0f,
-    300.0f,
-    64.0f,
-    64.0f
-    };
-    // Player Speed
-    float speed = 5.0f;
 };
 
 void DrawCircle(SDL_Renderer* renderer, float cx, float cy, float radius)
@@ -104,23 +93,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         return SDL_APP_FAILURE;
     }
 
+    // PLayer TEexture
+    app->playerTexture = SDL_CreateTextureFromSurface(app->renderer, app->playerSurface);
+
     // Audio: unpause and play once as the window opens
     SDL_ResumeAudioStreamDevice(app->audio);
     SDL_PutAudioStreamData(app->audio, app->wavData, app->wavLen);
-
-    // Plsyrt iniy
-    app->playerTexture =
-        IMG_LoadTexture(
-            app->renderer,
-            "assets/player.png"
-        );
-
-    if (!app->playerTexture)
-    {
-        SDL_Log("Failed to load player: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-
 
     return SDL_APP_CONTINUE;
 }
@@ -188,7 +166,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // Create Triangle 
     SDL_SetRenderDrawColor(app->renderer, 0, 0, 0, 255);
     SDL_RenderClear(app->renderer);
-    
+
     // Adding some text 
     SDL_SetRenderDrawColor(app->renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);  /* white, full alpha */
     SDL_RenderDebugText(app->renderer, 400, 40, "Ibrahim Testing Text!");
@@ -197,9 +175,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
 
     SDL_Vertex tri[3] = {
-        { {60.0f,  40.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    – red
-        { {60.0f, 200.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {0, 0} },  // left   – green
-        { {260.0f, 200.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // right  – blue
+        { {60.0f,  40.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    ï¿½ red
+        { {60.0f, 200.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {0, 0} },  // left   ï¿½ green
+        { {260.0f, 200.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // right  ï¿½ blue
     };
     SDL_RenderGeometry(app->renderer, nullptr, tri, 3, nullptr, 0);
 
@@ -207,9 +185,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // Another one opostie side :) and it is moving down 
 
     SDL_Vertex tri2[3] = {
-    { {470.0f,  40.0f + app->tri2Y}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    – red
-    { {270.0f, 200.0f + app->tri2Y}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // left   – green
-    { {470.0f, 200.0f + app->tri2Y}, {0.0f, 1.0f, 1.0f, 1.0f}, {0, 0} },  // right  – blue
+    { {470.0f,  40.0f + app->tri2Y}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    ï¿½ red
+    { {270.0f, 200.0f + app->tri2Y}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // left   ï¿½ green
+    { {470.0f, 200.0f + app->tri2Y}, {0.0f, 1.0f, 1.0f, 1.0f}, {0, 0} },  // right  ï¿½ blue
     };
 
     SDL_RenderGeometry(app->renderer, nullptr, tri2, 3, nullptr, 0);
@@ -221,12 +199,12 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         app->LeftWindowY += 1;
     }
 
-    
+
     // Differetn init Method for the triangle
     SDL_Vertex tri3[3];
 
     tri3[0].position.x = 600.0f;
-    tri3[0].position.y = 200.0f;    
+    tri3[0].position.y = 200.0f;
     tri3[0].color.r = 1.0f;
     tri3[0].color.g = 1.0f;
     tri3[0].color.b = 0.0f;
@@ -234,7 +212,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
     tri3[1].position.x = 700.0f;
     tri3[1].position.y = 300.0f;
-    tri3[1] .color.r = 0.0f;
+    tri3[1].color.r = 0.0f;
     tri3[1].color.g = 1.0f;
     tri3[1].color.b = 0.0f;
     tri3[1].color.a = 1.0f;
@@ -278,7 +256,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
             app->Hit += 1;
             app->wasColliding = true;
         }
-    }else{app->wasColliding = false;}
+    }
+    else { app->wasColliding = false; }
 
 
 
@@ -289,7 +268,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     }
     else if (Ball.x < -30.0f) {
         app->ballX = WINDOW_WIDTH;  // Reset to the right side of the window
-    }else if (Ball.y > WINDOW_HEIGHT) {
+    }
+    else if (Ball.y > WINDOW_HEIGHT) {
         app->ballY = -30.0f;  // Reset to the top side of the window
     }
     else if (Ball.y < -30.0f) {
@@ -344,37 +324,14 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
 
     // Real Circle
-    
+
     SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 255);
     DrawCircle(app->renderer, 50, 500, 10);
 
+    // PLayer Render
 
-
-    // Player Rendering
-    const bool* keys = SDL_GetKeyboardState(nullptr);
-
-    if (keys[SDL_SCANCODE_RIGHT])
-        app->player.x += app->speed;
-
-    if (keys[SDL_SCANCODE_LEFT])
-        app->player.x -= app->speed;
-
-    if (keys[SDL_SCANCODE_UP])
-        app->player.y -= app->speed;
-
-    if (keys[SDL_SCANCODE_DOWN])
-        app->player.y += app->speed;
-
-    SDL_RenderClear(app->renderer);
-
-    SDL_RenderTexture(
-        app->renderer,
-        app->playerTexture,
-        nullptr,
-        &app->player
-    );
-
-    SDL_RenderPresent(app->renderer);
+    SDL_FRect playerRect = { 700.0f, 500.0f, 100.0f, 100.0f }; // x, y, w, h
+    SDL_RenderTexture(app->renderer, app->playerTexture, nullptr, &playerRect);
 
 
     // Show the trame
