@@ -2,9 +2,21 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <iostream>
+#include <string>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
+
+// Builds an absolute path to a file in the assets/ folder next to the executable.
+// Works on both Windows and macOS regardless of the process's current directory.
+static std::string AssetPath(const char* filename)
+{
+    static const std::string basePath = []() {
+        const char* p = SDL_GetBasePath();
+        return p ? std::string(p) : std::string();
+    }();
+    return basePath + "assets/" + filename;
+}
 
 
 struct Sprite
@@ -85,7 +97,7 @@ struct SDLApplication {
 
 
     //spare
-    SDL_Surface* spareSurface = SDL_LoadPNG("assets/spare.png");
+    SDL_Surface* spareSurface = SDL_LoadPNG(AssetPath("spare.png").c_str());
 
     SDL_Texture* spareTexture = nullptr;
 
@@ -148,14 +160,14 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     }
 
     // Sprite init
-    app->sprite.Load(app->renderer, "assets/508.png");
+    app->sprite.Load(app->renderer, AssetPath("508.png"));
     // Select Frame from sprite sheet
     app->sprite.frameX = 0;
     app->sprite.frameY = 0;
 
     // Init Explode fire 
 
-    SDL_Surface* explodeSurface = SDL_LoadPNG("assets/explode.png");
+    SDL_Surface* explodeSurface = SDL_LoadPNG(AssetPath("explode.png").c_str());
 
     if (!explodeSurface)
     {
@@ -178,7 +190,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 
     // Audio: build absolute path next to the .exe and load Goblins_Dance.wav
     char wavPath[512];
-    SDL_snprintf(wavPath, sizeof(wavPath), "assets/Goblins_Dance.wav");
+    SDL_snprintf(wavPath, sizeof(wavPath), "%s", AssetPath("Goblins_Dance.wav").c_str());
     SDL_Log("Loading audio: %s", wavPath);
 
     SDL_AudioSpec spec;

@@ -113,6 +113,9 @@
       <AdditionalLibraryDirectories>C:\Library\SDL3_image-3.4.4;C:\Library\SDL3-3.4.14\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL3.lib;SDL3_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /i /e "$(ProjectDir)assets" "$(OutDir)assets\" &amp;&amp; xcopy /y "$(ProjectDir)SDL3.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -132,6 +135,9 @@
       <AdditionalLibraryDirectories>C:\Library\SDL3_image-3.4.4;C:\Library\SDL3-3.4.14\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL3.lib;SDL3_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /i /e "$(ProjectDir)assets" "$(OutDir)assets\" &amp;&amp; xcopy /y "$(ProjectDir)SDL3.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
