@@ -391,8 +391,6 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
     // Move the secon traingle 
 
-
-
     // Render Rectangle
     SDL_SetRenderDrawColor(app->renderer, 255, 255, 255, 255);   // white
     SDL_FRect rect = { 60.0f, 205.0f, 200.0f, 30.0f };         // x, y, w, h
