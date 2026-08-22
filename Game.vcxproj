@@ -113,7 +113,10 @@
       <AdditionalLibraryDirectories>C:\Library\SDL3_image-3.4.4;C:\Library\SDL3-3.4.14\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL3.lib;SDL3_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <!-- Copies assets/ and SDL3.dll next to the built .exe so it can find them
+         when launched directly from $(OutDir) instead of via the VS debugger. -->
     <PostBuildEvent>
+      <Message>Copying assets and SDL3.dll to output directory</Message>
       <Command>xcopy /y /i /e "$(ProjectDir)assets" "$(OutDir)assets\" &amp;&amp; xcopy /y "$(ProjectDir)SDL3.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -135,7 +138,10 @@
       <AdditionalLibraryDirectories>C:\Library\SDL3_image-3.4.4;C:\Library\SDL3-3.4.14\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL3.lib;SDL3_test.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <!-- Copies assets/ and SDL3.dll next to the built .exe so it can find them
+         when launched directly from $(OutDir) instead of via the VS debugger. -->
     <PostBuildEvent>
+      <Message>Copying assets and SDL3.dll to output directory</Message>
       <Command>xcopy /y /i /e "$(ProjectDir)assets" "$(OutDir)assets\" &amp;&amp; xcopy /y "$(ProjectDir)SDL3.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

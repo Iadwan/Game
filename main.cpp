@@ -7,6 +7,10 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
+// Frame limiter target: caps SDL_AppIterate to this many calls/second (see bottom of SDL_AppIterate).
+constexpr int TARGET_FPS = 60;
+constexpr Uint64 TARGET_FRAME_MS = 1000 / TARGET_FPS;
+
 // Builds an absolute path to a file in the assets/ folder next to the executable.
 // Works on both Windows and macOS regardless of the process's current directory.
 static std::string AssetPath(const char* filename)
@@ -271,6 +275,10 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
 SDL_AppResult SDL_AppIterate(void* appstate) {
     SDLApplication* app = static_cast<SDLApplication*>(appstate);
     (void)app;
+
+    // Frame limiter start: timestamp this frame so we know how long it took at the end.
+    const Uint64 frameStart = SDL_GetTicks();
+
     // Application / Game Logic
 
     //Debug Text
@@ -305,7 +313,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
     SDL_RenderGeometry(app->renderer, nullptr, tri2, 3, nullptr, 0);
 
-    app->tri2Y += 0.05f;
+    app->tri2Y += 1;  // Move the triangle down by 1 pixel each frame
 
     if (app->tri2Y > WINDOW_HEIGHT) {
         app->tri2Y = -220.0f;   // wrap: triangle is 200 wide -220.0f
@@ -607,6 +615,15 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // Show the trame
     SDL_RenderPresent(app->renderer);
 
+    // Frame limiter: cap the loop to TARGET_FPS so movement speed stays
+    // consistent instead of racing ahead on faster machines.
+    // frameTime = how long this frame's work (logic + rendering) actually took.
+    // If it finished early, sleep out the rest of the 1/TARGET_FPS budget.
+    const Uint64 frameTime = SDL_GetTicks() - frameStart;
+    if (frameTime < TARGET_FRAME_MS)
+    {
+        SDL_Delay(static_cast<Uint32>(TARGET_FRAME_MS - frameTime));
+    }
 
     return SDL_APP_CONTINUE;
 }
