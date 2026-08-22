@@ -351,8 +351,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // PLayer Render
     // We create Geormetry for 
     static SDL_FRect spareRect = { 30.0f, 500.0f, 100.0f, 100.0f }; // x, y, w, h
-    // Move player to the right 
-    spareRect.x += 0.1f;
+    // Move spare to the right 
+    spareRect.x += 1.8f;
     if (spareRect.x > WINDOW_WIDTH) spareRect.x = -spareRect.w;   // wrap when off the right edge
 
     // Copy a portion of the texture to the current rendering target at subpixel precision.
