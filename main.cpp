@@ -1,14 +1,72 @@
 ﻿#define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <iostream>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
+
+
+struct Sprite
+{
+    SDL_Texture* mTexture = nullptr;
+    SDL_FRect mDst{ 125.0f, 400.0f, 50.0f, 50.0f };
+
+    int frameX = 0;
+    int frameY = 0;
+
+    Sprite() = default;
+
+    void Load(SDL_Renderer* r, const std::string& filename)
+    {
+        SDL_Surface* surface = SDL_LoadBMP(filename.c_str());
+
+        if (!surface)
+        {
+            std::cout << "SDL_LoadBMP failed: "
+                << SDL_GetError() << '\n';
+            return;
+        }
+
+        mTexture = SDL_CreateTextureFromSurface(r, surface);
+
+        SDL_DestroySurface(surface);
+    }
+
+    ~Sprite()
+    {
+        SDL_DestroyTexture(mTexture);
+    }
+
+    void Render(SDL_Renderer* r)
+    {
+        SDL_FRect srcRect =
+        {
+            frameX * 1900.0f,
+            frameY * 1910.0f,
+            1900.0f,
+            1910.0f
+        };
+
+        SDL_RenderTexture(
+            r,
+            mTexture,
+            &srcRect,
+            &mDst
+        );
+    }
+};
+
+
 
 struct SDLApplication {
     SDL_Window* window = nullptr;
     const bool* keystate = nullptr;
     SDL_Renderer* renderer = nullptr;
+
+    Sprite sprite;
+    int spriteFrame = 0;
+    int spriteFrameTimer = 0;
 
     float squareX = 0.0f;
     float squareY = 0.0f;
@@ -32,7 +90,10 @@ struct SDLApplication {
     SDL_AudioStream* audio = nullptr;
     Uint8* wavData = nullptr;
     Uint32 wavLen = 0;
+
 };
+
+
 
 void DrawCircle(SDL_Renderer* renderer, float cx, float cy, float radius)
 {
@@ -48,12 +109,14 @@ void DrawCircle(SDL_Renderer* renderer, float cx, float cy, float radius)
     }
 }
 
+
 // Called once at startup (replaces the code before your while loop)
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
         SDL_Log("Failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
 
     SDLApplication* app = new SDLApplication();
 
@@ -63,6 +126,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         delete app;
         return SDL_APP_FAILURE;
     }
+
     app->keystate = SDL_GetKeyboardState(nullptr);
 
     *appstate = app;               // SDL hands this pointer back to the other callbacks
@@ -74,9 +138,16 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         return SDL_APP_FAILURE;
     }
 
+    // Sprite init
+    app->sprite.Load(app->renderer, "assets/508.bmp");
+    // Select Frame from sprite sheet
+    app->sprite.frameX = 0;
+    app->sprite.frameY = 0;
+
+
     // Audio: build absolute path next to the .exe and load Goblins_Dance.wav
     char wavPath[512];
-    SDL_snprintf(wavPath, sizeof(wavPath), "%sGoblins_Dance.wav", SDL_GetBasePath());
+    SDL_snprintf(wavPath, sizeof(wavPath), "assets/Goblins_Dance.wav", SDL_GetBasePath());
     SDL_Log("Loading audio: %s", wavPath);
 
     SDL_AudioSpec spec;
@@ -109,8 +180,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
 
     SDLApplication* app = static_cast<SDLApplication*>(appstate);
 
-
-
+    
     if (event->type == SDL_EVENT_QUIT) {
         return SDL_APP_SUCCESS;    // exit main loop, then SDL_AppQuit runs
     }
@@ -169,15 +239,15 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
     // Adding some text 
     SDL_SetRenderDrawColor(app->renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);  /* white, full alpha */
-    SDL_RenderDebugText(app->renderer, 400, 40, "Ibrahim Testing Text!");
+    SDL_RenderDebugText(app->renderer, 400, 40, "Ibrahim Testing DebugText!");
     SDL_RenderDebugTextFormat(app->renderer, 400, 60, "Triangle Left The Window: %d", app->LeftWindowY);
     SDL_RenderDebugTextFormat(app->renderer, 400, 80, "Enemey Ball Hit Window: %d", app->Hit);
 
-
-    SDL_Vertex tri[3] = {
-        { {60.0f,  40.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    � red
-        { {60.0f, 200.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {0, 0} },  // left   � green
-        { {260.0f, 200.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // right  � blue
+    // Make constexpr not tobe recreated every frame
+    constexpr SDL_Vertex tri[3] = {
+        { {60.0f,  40.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top – red
+        { {60.0f, 200.0f}, {0.0f, 1.0f, 0.0f, 1.0f}, {0, 0} },  // left – green
+        { {260.0f, 200.0f}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // right – blue
     };
     SDL_RenderGeometry(app->renderer, nullptr, tri, 3, nullptr, 0);
 
@@ -185,9 +255,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // Another one opostie side :) and it is moving down 
 
     SDL_Vertex tri2[3] = {
-    { {470.0f,  40.0f + app->tri2Y}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top    � red
-    { {270.0f, 200.0f + app->tri2Y}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // left   � green
-    { {470.0f, 200.0f + app->tri2Y}, {0.0f, 1.0f, 1.0f, 1.0f}, {0, 0} },  // right  � blue
+    { {470.0f,  40.0f + app->tri2Y}, {1.0f, 0.0f, 0.0f, 1.0f}, {0, 0} },  // top – red
+    { {270.0f, 200.0f + app->tri2Y}, {0.0f, 0.0f, 1.0f, 1.0f}, {0, 0} },  // left – green
+    { {470.0f, 200.0f + app->tri2Y}, {0.0f, 1.0f, 1.0f, 1.0f}, {0, 0} },  // right – blue
     };
 
     SDL_RenderGeometry(app->renderer, nullptr, tri2, 3, nullptr, 0);
@@ -226,6 +296,19 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
     SDL_RenderGeometry(app->renderer, nullptr, tri3, 3, nullptr, 0);
 
+
+    // PLayer Render
+    // We create Geormetry for 
+    static SDL_FRect playerRect = { 30.0f, 500.0f, 100.0f, 100.0f }; // x, y, w, h
+    // Move player to the right 
+    playerRect.x += 0.1f;
+    if (playerRect.x > WINDOW_WIDTH) playerRect.x = -playerRect.w;   // wrap when off the right edge
+
+    // Copy a portion of the texture to the current rendering target at subpixel precision.
+    SDL_RenderTexture(app->renderer, app->playerTexture, nullptr, &playerRect);
+
+
+
     // Draw Door
 
     SDL_SetRenderDrawColor(app->renderer, 61, 0, 0, 255);   // yellow (alpha must be 255 to be visible)
@@ -247,8 +330,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     SDL_FRect Ball = { app->ballX, app->ballY, 30.0f, 30.0f };         // x, y, w, h
     SDL_RenderFillRect(app->renderer, &Ball);
 
-    // Collision Detection between the moving ball and the door window
-    if (SDL_HasRectIntersectionFloat(&Ball, &doorWindow))
+    // Collision Detection between the moving ball and the PLayer
+    if (SDL_HasRectIntersectionFloat(&Ball, &playerRect))
     {
         SDL_Log("Collision!\n");
         if (!app->wasColliding)
@@ -312,8 +395,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     app->circleX += 10.0f;                       // move 2 px per frame
     app->circleY += 15.0f;                       // move 2 px per frame
 
-    if (app->circleX > 800.0f) app->circleX = -20.0f;   // wrap when off the right edge
-    if (app->circleY > 600.0f) app->circleY = -20.0f;   // wrap when off the Bottom edge
+    if (app->circleX > WINDOW_WIDTH) app->circleX = -20.0f;   // wrap when off the right edge
+    if (app->circleY > WINDOW_HEIGHT) app->circleY = -20.0f;   // wrap when off the Bottom edge
 
 
     //Circle 
@@ -328,10 +411,74 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     SDL_SetRenderDrawColor(app->renderer, 255, 0, 0, 255);
     DrawCircle(app->renderer, 50, 500, 10);
 
+
     // PLayer Render
 
-    SDL_FRect playerRect = { 700.0f, 500.0f, 100.0f, 100.0f }; // x, y, w, h
-    SDL_RenderTexture(app->renderer, app->playerTexture, nullptr, &playerRect);
+    playerRect.x += 0.1f;
+
+    if (playerRect.x > WINDOW_WIDTH)
+        playerRect.x = -playerRect.w;
+
+    SDL_RenderTexture(app->renderer,
+        app->playerTexture,
+        nullptr,
+        &playerRect);
+
+    // Handle Sprite move
+
+    app->spriteFrameTimer++;
+
+    if (app->spriteFrameTimer >= 10)
+    {
+        app->spriteFrameTimer = 0;
+
+        app->spriteFrame++;
+
+        if (app->spriteFrame >= 6)
+            app->spriteFrame = 0;
+    }
+
+
+    // Select frame
+    switch (app->spriteFrame)
+    {
+    case 0:
+        app->sprite.frameX = 0;
+        app->sprite.frameY = 0;
+        break;
+
+    case 1:
+        app->sprite.frameX = 0;
+        app->sprite.frameY = 1;
+        break;
+
+    case 2:
+        app->sprite.frameX = 0;
+        app->sprite.frameY = 2;
+        break;
+
+    case 3:
+        app->sprite.frameX = 1;
+        app->sprite.frameY = 0;
+        break;
+
+    case 4:
+        app->sprite.frameX = 1;
+        app->sprite.frameY = 1;
+        break;
+
+    case 5:
+        app->sprite.frameX = 1;
+        app->sprite.frameY = 2;
+        break;
+    }
+
+
+    // Render current frame
+    app->sprite.Render(app->renderer);
+
+
+
 
 
     // Show the trame
@@ -341,14 +488,18 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     return SDL_APP_CONTINUE;
 }
 
+
 // Called once at shutdown (replaces SDL_Quit + cleanup)
 void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     SDLApplication* app = static_cast<SDLApplication*>(appstate);
     if (app) {
-        SDL_DestroyAudioStream(app->audio);   // NEW
-        SDL_free(app->wavData);               // NEW
+        SDL_DestroyTexture(app->playerTexture);    // Destroy player
+        SDL_DestroyAudioStream(app->audio);   // Destroy audio stream
+        SDL_free(app->wavData);               // Destroy audio data
+
         SDL_DestroyRenderer(app->renderer);
         SDL_DestroyWindow(app->window);
+
         delete app;
     }
     // SDL_Quit() is called automatically by SDL after this returns
