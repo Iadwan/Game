@@ -19,11 +19,11 @@ struct Sprite
 
     void Load(SDL_Renderer* r, const std::string& filename)
     {
-        SDL_Surface* surface = SDL_LoadBMP(filename.c_str());
+        SDL_Surface* surface = SDL_LoadPNG(filename.c_str());
 
         if (!surface)
         {
-            std::cout << "SDL_LoadBMP failed: "
+            std::cout << "SDL_LoadPNG failed: "
                 << SDL_GetError() << '\n';
             return;
         }
@@ -42,10 +42,10 @@ struct Sprite
     {
         SDL_FRect srcRect =
         {
-            frameX * 1985.0f,
-            frameY * 1910.0f,
-            1900.0f,
-            1910.0f
+            frameX * 412.0f,
+            frameY * 318.0f,
+            412.0f,
+            318.0f
         };
 
         SDL_RenderTexture(
@@ -83,10 +83,10 @@ struct SDLApplication {
     int Hit = 0;
     bool wasColliding = false;  // Setting this to count the collcision outside frame iterator
 
-    //Player
-    SDL_Surface* playerSurface = SDL_LoadPNG("assets/player.png");
+    //spare
+    SDL_Surface* spareSurface = SDL_LoadPNG("assets/spare.png");
 
-    SDL_Texture* playerTexture = nullptr;
+    SDL_Texture* spareTexture = nullptr;
 
     // Load fire Sprite
     SDL_Texture* explodeTexture = nullptr;
@@ -147,7 +147,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     }
 
     // Sprite init
-    app->sprite.Load(app->renderer, "assets/508.bmp");
+    app->sprite.Load(app->renderer, "assets/508.png");
     // Select Frame from sprite sheet
     app->sprite.frameX = 0;
     app->sprite.frameY = 0;
@@ -195,7 +195,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     }
 
     // PLayer TEexture
-    app->playerTexture = SDL_CreateTextureFromSurface(app->renderer, app->playerSurface);
+    app->spareTexture = SDL_CreateTextureFromSurface(app->renderer, app->spareSurface);
 
     // Audio: unpause and play once as the window opens
     SDL_ResumeAudioStreamDevice(app->audio);
@@ -329,13 +329,13 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
     // PLayer Render
     // We create Geormetry for 
-    static SDL_FRect playerRect = { 30.0f, 500.0f, 100.0f, 100.0f }; // x, y, w, h
+    static SDL_FRect spareRect = { 30.0f, 500.0f, 100.0f, 100.0f }; // x, y, w, h
     // Move player to the right 
-    playerRect.x += 0.1f;
-    if (playerRect.x > WINDOW_WIDTH) playerRect.x = -playerRect.w;   // wrap when off the right edge
+    spareRect.x += 0.1f;
+    if (spareRect.x > WINDOW_WIDTH) spareRect.x = -spareRect.w;   // wrap when off the right edge
 
     // Copy a portion of the texture to the current rendering target at subpixel precision.
-    SDL_RenderTexture(app->renderer, app->playerTexture, nullptr, &playerRect);
+    SDL_RenderTexture(app->renderer, app->spareTexture, nullptr, &spareRect);
 
 
 
@@ -361,7 +361,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     SDL_RenderFillRect(app->renderer, &Ball);
 
     // Collision Detection between the moving ball and the PLayer
-    if (SDL_HasRectIntersectionFloat(&Ball, &playerRect))
+    if (SDL_HasRectIntersectionFloat(&Ball, &spareRect))
     {
         SDL_Log("Collision!\n");
         if (!app->wasColliding)
@@ -440,17 +440,17 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     DrawCircle(app->renderer, 50, 500, 10);
 
 
-    // PLayer Render
+    // spare Render
 
-    playerRect.x += 0.1f;
+    spareRect.x += 0.1f;
 
-    if (playerRect.x > WINDOW_WIDTH)
-        playerRect.x = -playerRect.w;
+    if (spareRect.x > WINDOW_WIDTH)
+        spareRect.x = -spareRect.w;
 
     SDL_RenderTexture(app->renderer,
-        app->playerTexture,
+        app->spareTexture,
         nullptr,
-        &playerRect);
+        &spareRect);
 
     // Handle Sprite move
 
@@ -603,7 +603,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     SDLApplication* app = static_cast<SDLApplication*>(appstate);
     if (app) {
-        SDL_DestroyTexture(app->playerTexture);    // Destroy player
+        SDL_DestroyTexture(app->spareTexture);    // Destroy player
         SDL_DestroyAudioStream(app->audio);   // Destroy audio stream
         SDL_free(app->wavData);               // Destroy audio data
 
