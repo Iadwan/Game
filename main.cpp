@@ -292,7 +292,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     SDL_SetRenderDrawColor(app->renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);  /* white, full alpha */
     SDL_RenderDebugText(app->renderer, 400, 40, "Ibrahim Testing DebugText!");
     SDL_RenderDebugTextFormat(app->renderer, 400, 60, "Triangle Left The Window: %d", app->LeftWindowY);
-    SDL_RenderDebugTextFormat(app->renderer, 400, 80, "Enemey Ball Hit Window: %d", app->Hit);
+    SDL_RenderDebugTextFormat(app->renderer, 400, 80, "Green Sequre Hits Spear: %d", app->Hit);
 
     // Make constexpr not tobe recreated every frame
     constexpr SDL_Vertex tri[3] = {
