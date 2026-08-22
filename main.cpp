@@ -42,7 +42,7 @@ struct Sprite
     {
         SDL_FRect srcRect =
         {
-            frameX * 1900.0f,
+            frameX * 1985.0f,
             frameY * 1910.0f,
             1900.0f,
             1910.0f
@@ -68,6 +68,7 @@ struct SDLApplication {
     int spriteFrame = 0;
     int spriteFrameTimer = 0;
 
+
     float squareX = 0.0f;
     float squareY = 0.0f;
     float squareS = 10.0f;
@@ -84,7 +85,14 @@ struct SDLApplication {
 
     //Player
     SDL_Surface* playerSurface = SDL_LoadPNG("assets/player.png");
+
     SDL_Texture* playerTexture = nullptr;
+
+    // Load fire Sprite
+    SDL_Texture* explodeTexture = nullptr;
+    int explodeFrame = 0;
+    float explodeTimer = 0.0f;
+
 
     // Audio: audio
     SDL_AudioStream* audio = nullptr;
@@ -143,6 +151,28 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     // Select Frame from sprite sheet
     app->sprite.frameX = 0;
     app->sprite.frameY = 0;
+
+    // Init Explode fire 
+
+    SDL_Surface* explodeSurface = SDL_LoadPNG("assets/explode.png");
+
+    if (!explodeSurface)
+    {
+        SDL_Log("Failed to load explode.bmp: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
+    app->explodeTexture =
+        SDL_CreateTextureFromSurface(app->renderer, explodeSurface);
+
+    SDL_DestroySurface(explodeSurface);
+
+    if (!app->explodeTexture)
+    {
+        SDL_Log("Failed to create explosion texture: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
 
 
     // Audio: build absolute path next to the .exe and load Goblins_Dance.wav
@@ -374,7 +404,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     SDL_RenderFillRect(app->renderer, &rect2);
 
 
-    //Square miving 
+    //Square moving 
 
     app->squareX += 2.0f;                       // move 2 px per frame
     app->squareY += 2.0f;                       // move 2 px per frame
@@ -439,7 +469,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     }
 
 
-    // Select frame
+    // Select frame from moving player
     switch (app->spriteFrame)
     {
     case 0:
@@ -471,14 +501,96 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         app->sprite.frameX = 1;
         app->sprite.frameY = 2;
         break;
-    }
 
+    case 6:
+        app->sprite.frameX = 2;
+        app->sprite.frameY = 0;
+        break;
+
+    case 7:
+        app->sprite.frameX = 2;
+        app->sprite.frameY = 1;
+        break;
+
+    case 8:
+        app->sprite.frameX = 2;
+        app->sprite.frameY = 2;
+        break;
+
+    case 9:
+        app->sprite.frameX = 3;
+        app->sprite.frameY = 0;
+        break;
+
+    case 10:
+        app->sprite.frameX = 3;
+        app->sprite.frameY = 1;
+        break;
+
+    case 11:
+        app->sprite.frameX = 3;
+        app->sprite.frameY = 2;
+        break;
+
+
+    }
+    
+    // Explosion sprite sheet
+
+// Explosion sprite sheet
+
+    constexpr float FRAME_WIDTH = 400.0f;
+    constexpr float FRAME_HEIGHT = 400.0f;
+
+    int column = app->explodeFrame % 3;
+    int row = app->explodeFrame / 3;
+
+    SDL_FRect src =
+    {
+        column * FRAME_WIDTH,
+        row * FRAME_HEIGHT,
+        FRAME_WIDTH,
+        FRAME_HEIGHT
+    };
+
+    SDL_FRect dest =
+    {
+        300.0f,
+        400.0f,
+        50.0f,
+        50.0f
+    };
+
+    SDL_RenderTexture(
+        app->renderer,
+        app->explodeTexture,
+        &src,
+        &dest
+    );
+
+
+    //////////End of Explode //////////////
 
     // Render current frame
     app->sprite.Render(app->renderer);
 
 
+    // New Explode Sprite
+    float dt = 0.25f;
 
+    app->explodeTimer += dt;
+
+    if (app->explodeTimer >= 0.1f)
+    {
+        app->explodeTimer = 0.0f;
+
+        app->explodeFrame++;
+
+        if (app->explodeFrame >= 9)
+        {
+            app->explodeFrame = 0;
+        }
+    }
 
 
     // Show the trame
