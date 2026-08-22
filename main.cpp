@@ -178,7 +178,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 
     // Audio: build absolute path next to the .exe and load Goblins_Dance.wav
     char wavPath[512];
-    SDL_snprintf(wavPath, sizeof(wavPath), "assets/Goblins_Dance.wav", SDL_GetBasePath());
+    SDL_snprintf(wavPath, sizeof(wavPath), "assets/Goblins_Dance.wav");
     SDL_Log("Loading audio: %s", wavPath);
 
     SDL_AudioSpec spec;
