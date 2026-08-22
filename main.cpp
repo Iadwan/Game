@@ -83,6 +83,7 @@ struct SDLApplication {
     int Hit = 0;
     bool wasColliding = false;  // Setting this to count the collcision outside frame iterator
 
+
     //spare
     SDL_Surface* spareSurface = SDL_LoadPNG("assets/spare.png");
 
